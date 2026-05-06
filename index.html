@@ -1,464 +1,437 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, 
-  PieChart, Pie, Cell, LineChart, Line 
-} from 'recharts';
-import { 
-  LayoutDashboard, 
-  Leaf, 
-  Camera, 
-  BarChart3, 
-  Zap, 
-  Info, 
-  ChevronRight, 
-  Upload, 
-  RefreshCw,
-  Search,
-  Factory,
-  Globe
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edukasi Penganggaran Sektor Publik</title>
+    <!-- Tailwind CSS untuk Styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome untuk Ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; scroll-behavior: smooth; }
+        .gradient-bg { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .hover-scale { transition: transform 0.3s ease; }
+        .hover-scale:hover { transform: translateY(-5px); }
+        #quiz-container { display: none; }
+        .timer-animation { transition: width 1s linear; }
+    </style>
+</head>
+<body class="bg-slate-50 text-gray-800">
 
-// --- DATA MOCK (Berdasarkan Research 2024-2025) ---
-const UMKM_DATA = [
-  { region: 'Jawa Barat', umkm: 5.4, waste: 1.2 },
-  { region: 'Jawa Timur', umkm: 4.5, waste: 1.1 },
-  { region: 'Jawa Tengah', umkm: 4.4, waste: 0.9 },
-  { region: 'Sumatera Utara', umkm: 1.1, waste: 0.4 },
-  { region: 'Banten', umkm: 0.9, waste: 0.3 },
-];
-
-const SECTOR_WASTE_DATA = [
-  { name: 'Tekstil/Fashion', value: 35, color: '#10b981' },
-  { name: 'Makanan & Minuman', value: 45, color: '#34d399' },
-  { name: 'Kerajinan Kayu', value: 12, color: '#059669' },
-  { name: 'Plastik/Polimer', value: 8, color: '#064e3b' },
-];
-
-const App = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [isScanning, setIsScanning] = useState(false);
-  const [scanResult, setScanResult] = useState(null);
-  const [uploadedImage, setUploadedImage] = useState(null);
-
-  // Fungsi Simulasi Upload & Analisis AI
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (f) => {
-        setUploadedImage(f.target.result);
-        startAnalysis();
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const startAnalysis = () => {
-    setIsScanning(true);
-    setScanResult(null);
-    
-    // Simulasi Deep Learning Processing (3 detik)
-    setTimeout(() => {
-      setIsScanning(false);
-      setScanResult({
-        productName: "Produk Manufaktur Tekstil",
-        wasteIndex: "Tinggi (7.5/10)",
-        wasteDetails: "Ditemukan penggunaan serat sintetis non-degradable sebesar 65%. Sisa potongan bahan (perca) mencapai 20% dari total input.",
-        recommmendation: "Gunakan pola 'Zero-Waste Cutting'. Ganti bahan baku ke serat rami atau katun organik untuk meningkatkan indeks keberlanjutan.",
-        redesignUrl: "https://images.unsplash.com/photo-1523381235312-3a1647fa9911?auto=format&fit=crop&w=800&q=80"
-      });
-    }, 3000);
-  };
-
-  return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
-      {/* Sidebar Navigation */}
-      <aside className="fixed left-0 top-0 h-full w-64 bg-white border-r border-slate-200 hidden md:flex flex-col z-50">
-        <div className="p-6 flex items-center gap-2">
-          <div className="bg-emerald-600 p-2 rounded-lg">
-            <Leaf className="text-white w-6 h-6" />
-          </div>
-          <h1 className="text-xl font-bold tracking-tight text-emerald-900">LENTERA.ID</h1>
+    <!-- Navigasi -->
+    <nav class="bg-white shadow-md fixed w-full z-50 top-0">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex-shrink-0 flex items-center gap-2">
+                    <i class="fas fa-landmark text-blue-600 text-2xl"></i>
+                    <span class="font-bold text-xl text-blue-900">PublikBudget</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#materi" class="text-gray-600 hover:text-blue-600 font-medium">Materi Inti</a>
+                    <a href="#multimedia" class="text-gray-600 hover:text-blue-600 font-medium">Audio & Video</a>
+                    <a href="#game" class="text-blue-600 font-bold hover:text-blue-800"><i class="fas fa-gamepad mr-1"></i> Mainkan Kuis</a>
+                </div>
+            </div>
         </div>
-        
-        <nav className="flex-1 px-4 py-4 space-y-2">
-          <NavItem 
-            icon={<LayoutDashboard size={20} />} 
-            label="Dashboard Data" 
-            active={activeTab === 'dashboard'} 
-            onClick={() => setActiveTab('dashboard')} 
-          />
-          <NavItem 
-            icon={<Camera size={20} />} 
-            label="Deteksi Limbah AI" 
-            active={activeTab === 'detection'} 
-            onClick={() => setActiveTab('detection')} 
-          />
-          <NavItem 
-            icon={<Globe size={20} />} 
-            label="Informasi Industri" 
-            active={activeTab === 'info'} 
-            onClick={() => setActiveTab('info')} 
-          />
-        </nav>
+    </nav>
 
-        <div className="p-6 border-t border-slate-100">
-          <div className="bg-emerald-50 rounded-xl p-4">
-            <p className="text-xs font-semibold text-emerald-800 uppercase mb-1">Visi Indonesia 2045</p>
-            <p className="text-sm text-emerald-600">Mendukung UMKM Hijau & Berkelanjutan.</p>
-          </div>
+    <!-- Hero Section -->
+    <header class="gradient-bg text-white pt-28 pb-20 px-4 mt-8">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6 leading-tight">Pahami Uang Rakyat,<br>Bangun Masa Depan Bangsa</h1>
+            <p class="text-lg md:text-xl mb-8 text-blue-100">Jelajahi seluk-beluk Penganggaran Organisasi Publik mulai dari APBN, APBD, hingga Medium Term Expenditure Framework (MTEF) dengan cara yang menyenangkan.</p>
+            <a href="#materi" class="bg-white text-blue-700 px-8 py-3 rounded-full font-bold shadow-lg hover:bg-blue-50 transition duration-300 mr-4">Mulai Belajar</a>
+            <a href="#game" class="bg-yellow-400 text-yellow-900 px-8 py-3 rounded-full font-bold shadow-lg hover:bg-yellow-300 transition duration-300"><i class="fas fa-bolt mr-2"></i>Uji Nyali</a>
         </div>
-      </aside>
+    </header>
 
-      {/* Main Content */}
-      <main className="md:ml-64 p-4 md:p-8">
-        {/* Header Section */}
-        <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-bold text-slate-800">
-              {activeTab === 'dashboard' && "Wawasan Data UMKM & Limbah"}
-              {activeTab === 'detection' && "AI Waste Detector & Redesign"}
-              {activeTab === 'info' && "Revolusi Industri 5.0"}
-            </h2>
-            <p className="text-slate-500">Transformasi Digital menuju Ekosistem Manufaktur Ramah Lingkungan.</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button className="bg-white border border-slate-200 p-2 rounded-full shadow-sm">
-              <Search size={18} className="text-slate-400" />
-            </button>
-            <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold border border-emerald-200">
-              MI
-            </div>
-          </div>
-        </header>
+    <!-- Section 1: Materi Inti -->
+    <section id="materi" class="py-16 px-4 max-w-7xl mx-auto">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-blue-900 mb-4">Pondasi Penganggaran Publik</h2>
+            <div class="h-1 w-20 bg-blue-600 mx-auto rounded"></div>
+        </div>
 
-        {/* Tab 1: Dashboard Data */}
-        {activeTab === 'dashboard' && (
-          <div className="space-y-6 animate-in fade-in duration-500">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <StatCard title="Total UMKM Terdata" value="30.12 JT" sub="Update Jan 2025" icon={<Factory className="text-blue-500" />} color="bg-blue-50" />
-              <StatCard title="Kontribusi PDB" value="61.07 %" sub="Target 2025: 63%" icon={<Zap className="text-amber-500" />} color="bg-amber-50" />
-              <StatCard title="Volume Limbah Industri" value="4.8 JT Ton" sub="Per Tahun (Est)" icon={<Leaf className="text-emerald-500" />} color="bg-emerald-50" />
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Card 1 -->
+            <div class="glass-card rounded-xl p-6 shadow-lg border border-gray-100 hover-scale">
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4 text-blue-600 text-xl">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">APBN & APBD</h3>
+                <p class="text-sm text-gray-600 mb-4">Rencana keuangan tahunan pemerintah pusat (APBN) dan daerah (APBD). Disetujui oleh DPR/DPRD. Terdiri dari Pendapatan, Belanja, dan Pembiayaan.</p>
+                <ul class="text-sm text-gray-500 list-disc pl-5">
+                    <li>Pajak, PNBP, Hibah (Pendapatan)</li>
+                    <li>Belanja Pusat & Daerah (Pengeluaran)</li>
+                </ul>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Chart 1: Regional Distribution */}
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                <h3 className="font-bold mb-6 flex items-center gap-2">
-                  <BarChart3 size={20} className="text-emerald-600" />
-                  Sebaran UMKM & Estimasi Limbah (Jutaan)
-                </h3>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={UMKM_DATA}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="region" />
-                      <YAxis />
-                      <Tooltip 
-                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                      />
-                      <Legend />
-                      <Bar name="Jumlah UMKM (Jt)" dataKey="umkm" fill="#10b981" radius={[4, 4, 0, 0]} />
-                      <Bar name="Besaran Limbah (Jt Ton)" dataKey="waste" fill="#334155" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
+            <!-- Card 2 -->
+            <div class="glass-card rounded-xl p-6 shadow-lg border border-gray-100 hover-scale">
+                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4 text-green-600 text-xl">
+                    <i class="fas fa-users"></i>
                 </div>
-              </div>
-
-              {/* Chart 2: Sector Composition */}
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                <h3 className="font-bold mb-6 flex items-center gap-2">
-                  <PieChart size={20} className="text-emerald-600" />
-                  Komposisi Jenis Limbah UMKM Manufaktur
-                </h3>
-                <div className="h-80 flex flex-col md:flex-row items-center">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={SECTOR_WASTE_DATA}
-                        innerRadius={60}
-                        outerRadius={100}
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {SECTOR_WASTE_DATA.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="w-full md:w-48 space-y-2 mt-4 md:mt-0">
-                    {SECTOR_WASTE_DATA.map((item) => (
-                      <div key={item.name} className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 rounded-full" style={{backgroundColor: item.color}}></div>
-                          <span>{item.name}</span>
-                        </div>
-                        <span className="font-semibold">{item.value}%</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+                <h3 class="text-xl font-bold mb-2">Aktor Utama</h3>
+                <p class="text-sm text-gray-600 mb-4">Penganggaran melibatkan banyak pihak agar tercipta *check and balance*.</p>
+                <ul class="text-sm text-gray-500 list-disc pl-5">
+                    <li><strong>Eksekutif:</strong> Menyusun & melaksanakan (Presiden/Kemenkeu/Pemda).</li>
+                    <li><strong>Legislatif:</strong> Membahas & menyetujui (DPR/DPRD).</li>
+                    <li><strong>Pengawas:</strong> Mengaudit (BPK, KPK, Inspektorat).</li>
+                </ul>
             </div>
-          </div>
-        )}
 
-        {/* Tab 2: AI Detection */}
-        {activeTab === 'detection' && (
-          <div className="max-w-4xl mx-auto animate-in slide-in-from-bottom duration-500">
-            <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
-              <div className="p-8 border-b border-slate-100 flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-bold text-slate-800">Review Produk & Deteksi Limbah</h3>
-                  <p className="text-slate-500 text-sm">Unggah foto produk manufaktur Anda untuk analisis keberlanjutan real-time.</p>
+            <!-- Card 3 -->
+            <div class="glass-card rounded-xl p-6 shadow-lg border border-gray-100 hover-scale">
+                <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-4 text-purple-600 text-xl">
+                    <i class="fas fa-sync-alt"></i>
                 </div>
-                <div className="hidden sm:block">
-                  <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Powered by Lentera AI</span>
-                </div>
-              </div>
-
-              <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Upload Side */}
-                <div className="space-y-4">
-                  <div 
-                    className={`relative border-2 border-dashed rounded-2xl h-80 flex flex-col items-center justify-center transition-all ${uploadedImage ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 hover:border-emerald-400 bg-slate-50'}`}
-                  >
-                    {uploadedImage ? (
-                      <div className="absolute inset-0 p-2">
-                        <img src={uploadedImage} alt="Uploaded" className="w-full h-full object-cover rounded-xl" />
-                        <button 
-                          onClick={() => setUploadedImage(null)}
-                          className="absolute top-4 right-4 bg-white/80 backdrop-blur p-2 rounded-full shadow-lg hover:bg-white text-red-500"
-                        >
-                          <RefreshCw size={20} />
-                        </button>
-                      </div>
-                    ) : (
-                      <label className="cursor-pointer flex flex-col items-center group">
-                        <div className="p-4 bg-white rounded-full shadow-sm group-hover:scale-110 transition-transform mb-4">
-                          <Upload className="text-emerald-600" size={32} />
-                        </div>
-                        <span className="text-sm font-medium text-slate-600">Klik untuk unggah gambar produk</span>
-                        <span className="text-xs text-slate-400 mt-1">Format: JPG, PNG (Maks 5MB)</span>
-                        <input type="file" className="hidden" onChange={handleImageUpload} accept="image/*" />
-                      </label>
-                    )}
-                  </div>
-                  
-                  <button 
-                    disabled={!uploadedImage || isScanning}
-                    onClick={startAnalysis}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-200"
-                  >
-                    {isScanning ? (
-                      <RefreshCw className="animate-spin" />
-                    ) : (
-                      <Zap size={20} />
-                    )}
-                    {isScanning ? 'Menganalisis Material...' : 'Analisis Dampak Limbah'}
-                  </button>
-                </div>
-
-                {/* Analysis Result Side */}
-                <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 flex flex-col justify-center">
-                  {!isScanning && !scanResult && (
-                    <div className="text-center py-12">
-                      <Info className="mx-auto text-slate-300 mb-4" size={48} />
-                      <p className="text-slate-400">Hasil analisis akan muncul di sini setelah Anda mengunggah gambar.</p>
-                    </div>
-                  )}
-
-                  {isScanning && (
-                    <div className="space-y-6 py-8">
-                      <div className="h-4 bg-slate-200 rounded-full overflow-hidden">
-                        <div className="h-full bg-emerald-500 animate-[loading_2s_ease-in-out_infinite]" style={{width: '60%'}}></div>
-                      </div>
-                      <div className="space-y-3">
-                        <div className="h-4 bg-slate-200 rounded w-3/4 animate-pulse"></div>
-                        <div className="h-4 bg-slate-200 rounded w-full animate-pulse"></div>
-                        <div className="h-4 bg-slate-200 rounded w-1/2 animate-pulse"></div>
-                      </div>
-                      <p className="text-center text-xs text-slate-400 font-medium">Scanning Texture & Material Composition...</p>
-                    </div>
-                  )}
-
-                  {scanResult && (
-                    <div className="space-y-5 animate-in zoom-in-95 duration-500">
-                      <div>
-                        <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Kategori Produk</label>
-                        <h4 className="text-lg font-bold text-slate-800">{scanResult.productName}</h4>
-                      </div>
-                      
-                      <div className="bg-white p-4 rounded-xl border border-slate-100">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm font-semibold text-slate-600">Estimasi Indeks Limbah</span>
-                          <span className="text-sm font-bold text-orange-600">{scanResult.wasteIndex}</span>
-                        </div>
-                        <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                          <div className="bg-orange-500 h-full" style={{width: '75%'}}></div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="text-xs font-bold text-emerald-600 uppercase tracking-widest">Review AI</label>
-                        <p className="text-sm text-slate-600 leading-relaxed mt-1">
-                          {scanResult.wasteDetails}
-                        </p>
-                      </div>
-
-                      <div className="p-4 bg-emerald-900 rounded-2xl text-white">
-                        <label className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Rekomendasi Eco-Design</label>
-                        <p className="text-sm mt-1 mb-4 italic">
-                          "{scanResult.recommmendation}"
-                        </p>
-                        <div className="rounded-lg overflow-hidden border border-emerald-700">
-                           <img src={scanResult.redesignUrl} alt="Redesign Suggestion" className="w-full h-32 object-cover opacity-80" />
-                        </div>
-                        <p className="text-[10px] text-center mt-2 text-emerald-300">Konsep Desain Ulang Berkelanjutan</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+                <h3 class="text-xl font-bold mb-2">Siklus Anggaran</h3>
+                <p class="text-sm text-gray-600 mb-4">Siklus berulang tiap tahun yang ketat dan teratur.</p>
+                <ol class="text-sm text-gray-500 list-decimal pl-5">
+                    <li>Perencanaan & Penyusunan</li>
+                    <li>Pembahasan & Penetapan</li>
+                    <li>Pelaksanaan Anggaran</li>
+                    <li>Pengawasan & Pertanggungjawaban</li>
+                </ol>
             </div>
-          </div>
-        )}
+        </div>
 
-        {/* Tab 3: Information Section */}
-        {activeTab === 'info' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in duration-700">
-            <div className="space-y-6">
-              <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-                <h3 className="text-2xl font-bold text-slate-800 mb-4 tracking-tight">Revolusi Industri 5.0</h3>
-                <p className="text-slate-600 leading-relaxed mb-6">
-                  Berbeda dengan Industri 4.0 yang berfokus pada efisiensi mesin, **Industri 5.0** mengembalikan manusia ke pusat produksi. 
-                  Ini adalah kolaborasi antara kecerdasan mesin (AI) dan kreativitas manusia untuk mencapai *Sustainability* dan *Personalization*.
+        <!-- MTEF Highlight -->
+        <div class="mt-12 bg-gradient-to-r from-blue-900 to-indigo-800 rounded-2xl p-8 text-white shadow-2xl flex flex-col md:flex-row items-center">
+            <div class="md:w-2/3 pr-0 md:pr-8 mb-6 md:mb-0">
+                <h3 class="text-2xl font-bold mb-3 text-yellow-300">Medium Term Expenditure Framework (MTEF)</h3>
+                <p class="text-blue-100 text-sm leading-relaxed mb-4">
+                    Atau <strong>Kerangka Pengeluaran Jangka Menengah (KPJM)</strong>. Ini bukan sekadar anggaran tahunan! MTEF adalah pengambilan keputusan dengan perspektif 3-5 tahun ke depan. Tujuannya memastikan program berkesinambungan dan tidak berhenti di tengah jalan karena kehabisan dana di tahun berikutnya.
                 </p>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100">
-                    <h4 className="font-bold text-blue-700 mb-1">Human-Centric</h4>
-                    <p className="text-xs text-blue-600/80">Fokus pada kesejahteraan pekerja dan masyarakat.</p>
-                  </div>
-                  <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
-                    <h4 className="font-bold text-emerald-700 mb-1">Sustainable</h4>
-                    <p className="text-xs text-emerald-600/80">Ekonomi sirkular untuk masa depan bumi.</p>
-                  </div>
-                </div>
-              </div>
+                <span class="inline-block bg-white text-blue-900 text-xs px-3 py-1 rounded-full font-semibold">Stabilitas Fiskal</span>
+                <span class="inline-block bg-white text-blue-900 text-xs px-3 py-1 rounded-full font-semibold">Alokasi Prioritas</span>
+            </div>
+            <div class="md:w-1/3 text-center">
+                <i class="fas fa-chart-line text-7xl text-blue-300 opacity-80"></i>
+            </div>
+        </div>
+    </section>
 
-              <div className="bg-slate-900 p-8 rounded-3xl text-white relative overflow-hidden shadow-2xl">
-                <div className="relative z-10">
-                  <h3 className="text-xl font-bold mb-4">Urgenitas Pengolahan Limbah</h3>
-                  <div className="space-y-4">
-                    <FactItem label="Meningkat" text="Timbulan sampah nasional mencapai 70 juta ton/tahun." />
-                    <FactItem label="Boros" text="Industri tekstil menghabiskan 93 miliar m³ air per tahun." />
-                    <FactItem label="Ekonomi" text="Ekonomi sirkular berpotensi menambah Rp19.3 Triliun ke PDB." />
-                  </div>
-                </div>
-                <div className="absolute -bottom-10 -right-10 opacity-20">
-                   <Globe size={200} />
-                </div>
-              </div>
+    <!-- Section 2: Multimedia (Gaya Belajar Berbeda) -->
+    <section id="multimedia" class="py-16 bg-blue-50 px-4">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-blue-900 mb-4">Ruang Audio-Visual</h2>
+                <p class="text-gray-600">Pahami materi sesuai dengan gaya belajarmu.</p>
+                <div class="h-1 w-20 bg-blue-600 mx-auto rounded mt-4"></div>
             </div>
 
-            <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-              <h3 className="text-xl font-bold text-slate-800 mb-6">Tantangan UMKM Hijau 2025</h3>
-              <div className="space-y-6">
-                <ChallengeItem 
-                  num="01" 
-                  title="Akses Pembiayaan" 
-                  desc="Kesenjangan pembiayaan hijau UMKM mencapai Rp 2.400 triliun pada 2026." 
-                />
-                <ChallengeItem 
-                  num="02" 
-                  title="Kesiapan Data" 
-                  desc="Kurangnya standarisasi aliran material dan emisi di tingkat mikro-kecil." 
-                />
-                <ChallengeItem 
-                  num="03" 
-                  title="Kesenjangan Skill" 
-                  desc="Penerapan AI membutuhkan literasi digital yang belum merata di daerah." 
-                />
-                <ChallengeItem 
-                  num="04" 
-                  title="Regulasi" 
-                  desc="Pemberlakuan pajak karbon (CBAM) menuntut UMKM untuk lebih transparan." 
-                />
-              </div>
-              <div className="mt-8 pt-8 border-t border-slate-100">
-                <button className="w-full flex items-center justify-between text-emerald-700 font-bold hover:translate-x-1 transition-transform">
-                  Baca Selengkapnya di Business Plan
-                  <ChevronRight size={20} />
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Gaya Audio -->
+                <div class="bg-white p-8 rounded-xl shadow-lg border border-blue-100 flex flex-col justify-center items-center text-center">
+                    <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6 text-blue-600 text-3xl">
+                        <i class="fas fa-headphones-alt"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3">Belajar Lewat Audio</h3>
+                    <p class="text-gray-600 mb-6 text-sm">Tekan tombol di bawah ini, tutup matamu, dan dengarkan robot AI kami membacakan ringkasan eksklusif dari materi PPT Anda.</p>
+                    
+                    <button id="btn-audio" onclick="playAudioSummary()" class="bg-blue-600 text-white px-6 py-3 rounded-full font-bold hover:bg-blue-700 transition flex items-center gap-2">
+                        <i class="fas fa-play"></i> Dengarkan Ringkasan
+                    </button>
+                    <button id="btn-stop-audio" onclick="stopAudio()" class="hidden mt-3 text-red-500 text-sm font-semibold hover:underline">Berhenti Membaca</button>
+                </div>
+
+                <!-- Gaya Visual -->
+                <div class="bg-white p-4 rounded-xl shadow-lg border border-blue-100">
+                    <h3 class="text-xl font-bold mb-3 px-4 pt-2">Ilustrasi APBN</h3>
+                    <!-- Placeholder YouTube Video (Kemenkeu Edukasi) -->
+                    <div class="relative w-full overflow-hidden rounded-lg" style="padding-top: 56.25%;">
+                        <iframe class="absolute top-0 left-0 w-full h-full" 
+                            src="https://www.youtube.com/embed/7C1y1gN4iGE" 
+                            title="Edukasi APBN" frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
+                        </iframe>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-3 px-4 text-center">Video Referensi: Penjelasan Singkat APBN oleh Kemenkeu RI.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 3: Game Adrenalin -->
+    <section id="game" class="py-16 px-4 bg-gray-900 text-white relative overflow-hidden">
+        <!-- Latar belakang aksen -->
+        <div class="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 rounded-full bg-blue-600 opacity-20 blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-64 h-64 rounded-full bg-yellow-500 opacity-20 blur-3xl"></div>
+
+        <div class="max-w-3xl mx-auto relative z-10">
+            <div class="text-center mb-10">
+                <i class="fas fa-gamepad text-5xl text-yellow-400 mb-4"></i>
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Zona Adrenalin: Uji Pengetahuanmu!</h2>
+                <p class="text-gray-300 mb-8">Anda hanya memiliki <span class="text-yellow-400 font-bold">10 Detik</span> untuk setiap soal. Buktikan Anda paham tentang Penganggaran Sektor Publik!</p>
+                
+                <button id="btn-start-quiz" onclick="startQuiz()" class="bg-yellow-400 text-gray-900 px-10 py-4 rounded-full font-bold text-xl shadow-[0_0_15px_rgba(250,204,21,0.5)] hover:bg-yellow-300 hover:scale-105 transition transform duration-300">
+                    Mulai Tantangan Sekarang!
                 </button>
-              </div>
             </div>
-          </div>
-        )}
-      </main>
 
-      {/* Global CSS for Animations */}
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes loading {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
+            <!-- Container Kuis -->
+            <div id="quiz-container" class="bg-white text-gray-800 rounded-2xl p-6 md:p-10 shadow-2xl relative">
+                <!-- Header Kuis: Soal ke & Score -->
+                <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
+                    <span id="question-tracker" class="font-bold text-blue-800 bg-blue-100 px-3 py-1 rounded-lg">Soal 1/5</span>
+                    <span class="font-bold text-gray-600">Skor: <span id="score-display" class="text-green-600 text-xl">0</span></span>
+                </div>
+
+                <!-- Timer Bar -->
+                <div class="w-full bg-gray-200 rounded-full h-3 mb-6 overflow-hidden">
+                    <div id="timer-bar" class="bg-red-500 h-3 rounded-full timer-animation" style="width: 100%;"></div>
+                </div>
+
+                <!-- Soal -->
+                <h3 id="question-text" class="text-xl md:text-2xl font-bold mb-6 text-gray-800 min-h-[80px]">Pertanyaan akan muncul di sini...</h3>
+
+                <!-- Pilihan Ganda -->
+                <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Tombol di-generate via JS -->
+                </div>
+            </div>
+
+            <!-- Hasil Kuis -->
+            <div id="result-container" class="hidden bg-white text-gray-800 rounded-2xl p-8 text-center shadow-2xl">
+                <i id="result-icon" class="fas fa-trophy text-6xl text-yellow-400 mb-4"></i>
+                <h3 class="text-3xl font-bold mb-2">Permainan Selesai!</h3>
+                <p class="text-lg text-gray-600 mb-6">Skor Akhir Anda:</p>
+                <div class="text-6xl font-black text-blue-600 mb-8" id="final-score">100</div>
+                <p id="result-message" class="text-lg font-medium mb-8 text-gray-700">Luar biasa! Anda adalah Master Anggaran!</p>
+                <button onclick="resetQuiz()" class="bg-blue-600 text-white px-8 py-3 rounded-full font-bold hover:bg-blue-700 transition">Main Lagi</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-400 py-8 text-center">
+        <p>&copy; 2026 Edukasi Penganggaran Organisasi Publik.</p>
+        <p class="text-sm mt-2">Dibuat berdasarkan materi kuliah Fakultas Vokasi USU.</p>
+    </footer>
+
+    <!-- Logika JavaScript untuk Fitur Interaktif -->
+    <script>
+        /* =========================================
+           FITUR 1: AUDIO TTS (TEXT-TO-SPEECH)
+        ========================================= */
+        let synth = window.speechSynthesis;
+        let isSpeaking = false;
+
+        function playAudioSummary() {
+            if (isSpeaking) {
+                synth.cancel();
+            }
+
+            const textToRead = "Selamat datang di ringkasan materi Penganggaran Organisasi Publik. Anggaran Pendapatan dan Belanja Negara atau APBN, adalah rencana keuangan tahunan pemerintah pusat. Pendapatan negara berasal dari Pajak, Penerimaan Negara Bukan Pajak, dan Hibah. Sementara itu, belanja negara digunakan untuk membiayai kementerian, lembaga, serta transfer ke daerah. Dalam merencanakan anggaran, pemerintah menggunakan konsep MTEF atau Kerangka Pengeluaran Jangka Menengah, yaitu perencanaan tiga hingga lima tahun ke depan agar program pembangunan berkesinambungan dan menjaga stabilitas fiskal. Aktor utama dalam proses ini melibatkan pihak eksekutif seperti Presiden dan Kementerian Keuangan, pihak legislatif yaitu DPR, dan diawasi oleh BPK serta masyarakat luas.";
+
+            const utterance = new SpeechSynthesisUtterance(textToRead);
+            utterance.lang = 'id-ID'; // Bahasa Indonesia
+            utterance.rate = 0.95;    // Kecepatan membaca
+
+            utterance.onstart = () => {
+                isSpeaking = true;
+                document.getElementById('btn-audio').innerHTML = '<i class="fas fa-volume-up animate-pulse"></i> Sedang Membaca...';
+                document.getElementById('btn-stop-audio').classList.remove('hidden');
+            };
+
+            utterance.onend = () => {
+                stopAudio();
+            };
+
+            synth.speak(utterance);
         }
-        .animate-loading {
-          animation: loading 2s infinite linear;
+
+        function stopAudio() {
+            synth.cancel();
+            isSpeaking = false;
+            document.getElementById('btn-audio').innerHTML = '<i class="fas fa-play"></i> Dengarkan Ringkasan';
+            document.getElementById('btn-stop-audio').classList.add('hidden');
         }
-      `}} />
-    </div>
-  );
-};
 
-// --- SUB-COMPONENTS ---
 
-const NavItem = ({ icon, label, active, onClick }) => (
-  <button 
-    onClick={onClick}
-    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${active ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'}`}
-  >
-    {icon}
-    <span>{label}</span>
-  </button>
-);
+        /* =========================================
+           FITUR 2: KUIS ADRENALIN (GAME)
+        ========================================= */
+        const quizData = [
+            {
+                question: "Undang-Undang Nomor berapakah yang mengatur tentang Sistem Perencanaan Pembangunan Nasional?",
+                options: ["UU No 17 Tahun 2003", "UU No 25 Tahun 2004", "UU No 62 Tahun 2024", "UU No 33 Tahun 2004"],
+                correct: 1
+            },
+            {
+                question: "Apa kepanjangan dari konsep MTEF dalam penganggaran?",
+                options: ["Money Transfer Evaluation Fund", "Minimum Target Economic Finance", "Medium Term Expenditure Framework", "Master Theory of Economic Framework"],
+                correct: 2
+            },
+            {
+                question: "Yang TIDAK termasuk dalam kategori Pendapatan Negara adalah...",
+                options: ["Penerimaan Perpajakan", "Hibah", "Penerimaan Negara Bukan Pajak (PNBP)", "Belanja Pegawai"],
+                correct: 3
+            },
+            {
+                question: "Fungsi APBN/APBD yang bertujuan untuk menjaga keseimbangan ekonomi disebut fungsi...",
+                options: ["Alokasi", "Distribusi", "Otorisasi", "Stabilisasi"],
+                correct: 3
+            },
+            {
+                question: "Tahap terakhir dalam siklus APBN yang diaudit oleh Badan Pemeriksa Keuangan (BPK) adalah tahap...",
+                options: ["Perencanaan", "Pelaksanaan", "Pertanggungjawaban", "Pembahasan"],
+                correct: 2
+            }
+        ];
 
-const StatCard = ({ title, value, sub, icon, color }) => (
-  <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
-    <div className="flex items-center justify-between mb-4">
-      <div className={`p-3 rounded-xl ${color}`}>
-        {icon}
-      </div>
-      <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded tracking-widest">LIVE</span>
-    </div>
-    <h4 className="text-slate-500 text-sm font-medium">{title}</h4>
-    <div className="flex items-baseline gap-2 mt-1">
-      <span className="text-2xl font-bold text-slate-800 tracking-tight">{value}</span>
-      <span className="text-xs text-emerald-600 font-semibold">{sub}</span>
-    </div>
-  </div>
-);
+        let currentQuestion = 0;
+        let score = 0;
+        let timeLeft = 10;
+        let timerInterval;
 
-const FactItem = ({ label, text }) => (
-  <div className="flex gap-4">
-    <div className="h-6 w-1 bg-emerald-500 rounded-full mt-1 shrink-0"></div>
-    <div>
-      <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-tighter block">{label}</span>
-      <p className="text-sm text-slate-300">{text}</p>
-    </div>
-  </div>
-);
+        const startBtn = document.getElementById('btn-start-quiz');
+        const quizContainer = document.getElementById('quiz-container');
+        const resultContainer = document.getElementById('result-container');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const timerBar = document.getElementById('timer-bar');
+        const scoreDisplay = document.getElementById('score-display');
+        const trackerDisplay = document.getElementById('question-tracker');
 
-const ChallengeItem = ({ num, title, desc }) => (
-  <div className="flex gap-4">
-    <span className="text-lg font-black text-slate-100 select-none leading-none">{num}</span>
-    <div>
-      <h4 className="font-bold text-slate-800 text-sm">{title}</h4>
-      <p className="text-xs text-slate-500 leading-relaxed mt-1">{desc}</p>
-    </div>
-  </div>
-);
+        function startQuiz() {
+            startBtn.classList.add('hidden');
+            resultContainer.classList.add('hidden');
+            quizContainer.style.display = 'block';
+            currentQuestion = 0;
+            score = 0;
+            updateScore();
+            loadQuestion();
+            
+            // Scroll ke kuis
+            setTimeout(() => {
+                quizContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
 
-export default App;
+        function loadQuestion() {
+            clearInterval(timerInterval);
+            
+            const q = quizData[currentQuestion];
+            questionText.innerText = q.question;
+            trackerDisplay.innerText = `Soal ${currentQuestion + 1}/${quizData.length}`;
+            
+            // Generate Buttons
+            optionsContainer.innerHTML = '';
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 font-medium transition duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+
+            // Start Adrenaline Timer
+            timeLeft = 10;
+            timerBar.style.transition = 'none';
+            timerBar.style.width = '100%';
+            timerBar.classList.remove('bg-red-500');
+            timerBar.classList.add('bg-green-500');
+            
+            setTimeout(() => {
+                timerBar.style.transition = 'width 10s linear';
+                timerBar.style.width = '0%';
+                timerBar.classList.remove('bg-green-500');
+                timerBar.classList.add('bg-red-500');
+            }, 50);
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeOut();
+                }
+            }, 1000);
+        }
+
+        function checkAnswer(selectedIndex, btnElement) {
+            clearInterval(timerInterval);
+            
+            // Disable all buttons
+            const buttons = optionsContainer.querySelectorAll('button');
+            buttons.forEach(b => b.disabled = true);
+
+            const correctIndex = quizData[currentQuestion].correct;
+
+            if (selectedIndex === correctIndex) {
+                btnElement.classList.remove('border-gray-200', 'hover:bg-blue-50');
+                btnElement.classList.add('bg-green-500', 'text-white', 'border-green-600');
+                score += 20; // 20 points per question = max 100
+                updateScore();
+            } else {
+                btnElement.classList.remove('border-gray-200', 'hover:bg-blue-50');
+                btnElement.classList.add('bg-red-500', 'text-white', 'border-red-600');
+                // Show correct answer
+                buttons[correctIndex].classList.add('bg-green-100', 'border-green-500', 'text-green-800');
+            }
+
+            setTimeout(nextQuestion, 1500);
+        }
+
+        function handleTimeOut() {
+            const buttons = optionsContainer.querySelectorAll('button');
+            buttons.forEach(b => b.disabled = true);
+            const correctIndex = quizData[currentQuestion].correct;
+            buttons[correctIndex].classList.add('bg-yellow-200', 'border-yellow-500');
+            questionText.innerText = "Waktu Habis! ⏱️";
+            
+            setTimeout(nextQuestion, 2000);
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < quizData.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function updateScore() {
+            scoreDisplay.innerText = score;
+        }
+
+        function showResults() {
+            quizContainer.style.display = 'none';
+            resultContainer.classList.remove('hidden');
+            
+            document.getElementById('final-score').innerText = score;
+            const msgObj = document.getElementById('result-message');
+            const iconObj = document.getElementById('result-icon');
+
+            if (score === 100) {
+                msgObj.innerText = "Sempurna! Anda sangat memahami materi Penganggaran Sektor Publik.";
+                iconObj.className = "fas fa-crown text-6xl text-yellow-400 mb-4";
+            } else if (score >= 60) {
+                msgObj.innerText = "Bagus! Pengetahuan Anda sudah cukup solid.";
+                iconObj.className = "fas fa-medal text-6xl text-gray-400 mb-4";
+            } else {
+                msgObj.innerText = "Jangan menyerah! Ayo baca materinya lagi dan coba kembali.";
+                iconObj.className = "fas fa-book-reader text-6xl text-blue-400 mb-4";
+            }
+        }
+
+        function resetQuiz() {
+            resultContainer.classList.add('hidden');
+            startBtn.classList.remove('hidden');
+        }
+
+        // Cleanup SpeechSynthesis ketika user keluar halaman/refresh
+        window.addEventListener('beforeunload', () => {
+            if(window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+            }
+        });
+    </script>
+</body>
+</html>
